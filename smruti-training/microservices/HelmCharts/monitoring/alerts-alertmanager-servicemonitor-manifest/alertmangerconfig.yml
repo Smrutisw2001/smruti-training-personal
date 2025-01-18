@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: main-rules-alert-config
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  route:
+    repeatInterval: 30m
+    receiver: 'null'
+    routes:
+    - matchers:
+      - name: alertname
+        value: HighCpuUsage
+      receiver: 'send-email'
+    - matchers:
+      - name: alertname
+        value: PodRestart
+      receiver: 'send-email'
+      repeatInterval: 5m
+    - matchers:
+      - name: alertname
+        value: PodCrashLoopBackOff
+      receiver: 'send-email'
+      repeatInterval: 2m  # Shorter interval for critical pod alerts
+  receivers:
+  - name: 'send-email'
+    emailConfigs:
+    - to: kanhasmruti15@gmail.com
+      from: kanhasmruti15@gmail.com
+      sendResolved: false
+      smarthost: smtp.gmail.com:587
+      authUsername: kanhasmruti15@gmail.com
+      authIdentity: kanhasmruti15@gmail.com
+      authPassword:
+        name: mail-pass
+        key: gmail-pass
+  - name: 'null'

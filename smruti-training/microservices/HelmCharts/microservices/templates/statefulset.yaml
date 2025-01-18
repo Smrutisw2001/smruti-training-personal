@@ -1,0 +1,66 @@
+{{- if .Values.statefulset.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Values.statefulset.labels.app }}
+spec:
+  serviceName: {{ .Release.Name }}
+  replicas: {{ .Values.statefulset.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.statefulset.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.statefulset.labels.app }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.statefulset.containers.image }}{{ if .Values.statefulset.containers.tag }}:{{ .Values.statefulset.containers.tag }}{{ end }}
+          args:
+          {{- if .Values.statefulset.containers.args }}
+          {{- range .Values.statefulset.containers.args }}
+            - {{ . | quote }}
+          {{- end }}
+          {{- end }}
+          ports:
+          {{- if .Values.statefulset.containers.ports }}
+          {{- range .Values.statefulset.containers.ports }}
+            - containerPort: {{ .containerPort }}
+          {{- end }}
+          {{- end }}
+          env:
+          {{- if .Values.statefulset.env }}
+          {{- range .Values.statefulset.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.statefulset.volumeMounts }}
+          {{- range .Values.statefulset.volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath | quote }}
+          {{- end }}
+          {{- end }}
+  volumeClaimTemplates:
+  {{- if .Values.statefulset.volumeClaimTemplates }}
+  {{- range .Values.statefulset.volumeClaimTemplates }}
+    - metadata:
+        name: {{ .metadata.name }}
+      spec:
+        accessModes:
+        {{- range .spec.accessModes }}
+          - {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .spec.resources.requests.storage }}
+        {{- if .spec.storageClassName }}
+        storageClassName: {{ .spec.storageClassName }}
+        {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}

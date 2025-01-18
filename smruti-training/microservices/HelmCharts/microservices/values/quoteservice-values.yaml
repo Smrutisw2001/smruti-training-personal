@@ -1,0 +1,53 @@
+name: quoteservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: quoteservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/quoteservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 50051
+
+
+  env:
+    - name: QUOTE_SERVICE_PORT
+      value: "50051"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=quoteservice"
+    - name: OTEL_PHP_AUTOLOAD_ENABLED
+      value: "true"
+    - name: OTEL_SERVICE_NAME
+      value: "quoteservice"
+    - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
+      value: "true"
+
+
+  resources:
+    limits:
+      memory: "40Mi"
+
+
+
+Service:
+  labels:
+    app: quoteservice
+  ports:
+    - protocol: TCP
+      port: 80   # Exposed port for other services to connect
+      targetPort: 50051 # If you want to create a headless service (for internal communication)
+  type: ClusterIP
+
+configMap:
+  enabled: false
+
+statefulset:
+  enabled: false
+

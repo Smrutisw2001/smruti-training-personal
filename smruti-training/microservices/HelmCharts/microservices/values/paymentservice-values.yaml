@@ -1,0 +1,51 @@
+name: paymentservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: paymentservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/paymentservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 8080
+
+
+  env:
+    - name: PAYMENT_SERVICE_PORT
+      value: "8080"  # Replace with your service's port
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: "delta"
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=paymentservice"
+    - name: OTEL_SERVICE_NAME
+      value: "paymentservice"
+
+  resources:
+    limits:
+      memory: "120Mi"
+      
+
+Service:
+  labels:
+    app: paymentservice
+  ports:
+    - protocol: TCP
+      port: 8080  # ClusterIP port
+      targetPort: 8080  # Matches containerPort
+  type: ClusterIP  # Use LoadBalancer if exposing externally
+
+
+configMap:
+  enabled: false
+
+
+statefulset:
+  enabled: false
+

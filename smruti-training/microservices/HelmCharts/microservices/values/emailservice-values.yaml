@@ -1,0 +1,50 @@
+name: emailservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: emailservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/emailservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 8080
+
+
+  env:
+    - name: APP_ENV
+      value: "production"
+    - name: EMAIL_SERVICE_PORT
+      value: "8080"  # Replace with actual port value
+    - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      value: "http://otelcol:4318/v1/traces" # Replace with actual OTEL collector URL
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=emailservice"
+    - name: OTEL_SERVICE_NAME
+      value: "emailservice"
+
+  resources:
+    limits:
+      memory: "100Mi"
+      
+
+Service:
+  labels:
+    app: emailservice
+  ports:
+    - protocol: TCP
+      port: 80  # Expose this port on the service
+      targetPort: 8080  # This is the port that the app is listening on inside the container
+  type: ClusterIP
+
+configMap:
+  enabled: false
+
+
+statefulset:
+  enabled: false
+

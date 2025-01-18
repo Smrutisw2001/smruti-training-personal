@@ -1,0 +1,86 @@
+# Vault Helm Chart Value Overrides
+global:
+  enabled: true
+
+injector:
+  enabled: true
+
+server:
+  # # Pass AWS credentials as environment variables from the Kubernetes secret
+  # extraEnv:
+  #   - name: AWS_ACCESS_KEY_ID
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: vault-eks-creds
+  #         key: AWS_ACCESS_KEY_ID
+  #   - name: AWS_SECRET_ACCESS_KEY
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: vault-eks-creds
+  #         key: AWS_SECRET_ACCESS_KEY
+
+  # Disable dataStorage since S3 does not require a local PVC
+  dataStorage:
+    enabled: false
+
+  # Optionally keep audit storage if you need it; S3 does not cover audit logs
+  # auditStorage:
+  #   enabled: true
+  #   size: 5Gi
+  #   mountPath: "/vault/audit"
+  #   storageClass: gp2
+  #   accessMode: ReadWriteOnce
+  #   annotations: {}
+  #   labels: {}
+
+  standalone:
+    enabled: false
+
+  # Run Vault in "HA" mode.
+  ha:
+    enabled: true
+    replicas: 3
+
+    config: |
+      ui = true
+
+      listener "tcp" {
+        tls_disable = 1
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+
+      seal "awskms" {
+        region     = "ap-south-1"
+        kms_key_id = "YOUR KMS KEY"
+        access_key = "ACCESS_KEY_ID"
+        secret_key = "SECRET_ACCESS_KEY"
+      }
+
+      storage "s3" {
+        bucket     = "smruti-vault-storage-bucket"
+        region     = "ap-south-1"
+        access_key = "ACCESS_KEY_ID"
+        secret_key = "SECRET_ACCESS_KEY"
+      }
+
+      ha_storage "dynamodb" {
+        table      = "smruti-vault-dynamodb-table"
+        region     = "ap-south-1"
+        ha_enabled = "true"
+        access_key = "ACCESS_KEY_ID"
+        secret_key = "SECRET_ACCESS_KEY"
+      }
+
+      service_registration "kubernetes" {}
+
+  # Uncomment this if you wish to use IAM roles instead of access/secret keys
+  # serviceAccount:
+  #   create: true
+  #   name: "vault"
+  #   annotations:
+  #     eks.amazonaws.com/role-arn: "arn:aws:iam::218306567362:role/smruti-VaultEKSRole"
+
+
+# NOTE: THIS FILE IS NOT TESTED BECAUSE S3 DO NOT SUPPORT HA BYDEFAULT. BUT BY USING DYNAMO DB WITH S3 YOU CAN ACHIEVE IT.
+#      WHERE S3 WILL USE FOR STORAGE OF SECRET AND DYNAMO DB WILL USE FOR ACQUIREING THE LOCK FOR ACTIVE NODE IN HA MODE.

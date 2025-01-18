@@ -1,0 +1,56 @@
+name: adservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: adservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/adservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 8080
+
+
+  env:
+    - name: AD_SERVICE_PORT
+      value: "8080"  # Port for AdService
+    - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+      value: "featureflagservice:50051"  # Example: pointing to featureflagservice gRPC address
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"  # OpenTelemetry endpoint for exporting traces
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: "delta"  # or "cumulative", depending on your preference for metric temporality
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=adservice"
+    - name: OTEL_LOGS_EXPORTER
+      value: "otlp"
+    - name: OTEL_SERVICE_NAME
+      value: "adservice"
+    - name: JAVA_TOOL_OPTIONS
+      value: "-javaagent:/usr/src/app/opentelemetry-javaagent.jar"
+
+  resources:
+    limits:
+      memory: "300Mi"
+      
+
+Service:
+  labels:
+    app: adservice
+  ports:
+    - protocol: TCP
+      port: 80  # Expose this port on the service
+      targetPort: 8080  # This is the port that the app is listening on inside the container
+  type: ClusterIP
+
+configMap:
+  enabled: false
+
+
+statefulset:
+  enabled: false
+

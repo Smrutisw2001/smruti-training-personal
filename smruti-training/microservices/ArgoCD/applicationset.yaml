@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: microservices-applications
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: adservice
+            valueFile: values/adservice-values.yaml
+          - name: cartservice
+            valueFile: values/cartservice-values.yaml
+          - name: currencyservice
+            valueFile: values/currencyservice-values.yaml
+          - name: emailservice
+            valueFile: values/emailservice-values.yaml
+          - name: featureflagservice
+            valueFile: values/featureflagservice-values.yaml
+          - name: ffs-postgres
+            valueFile: values/ffs-postgres-values.yaml
+          - name: otelcol
+            valueFile: values/otelcol-values.yaml
+          - name: paymentservice
+            valueFile: values/paymentservice-values.yaml
+          - name: productcatalogservice
+            valueFile: values/productcatalogservice-values.yaml
+          - name: quoteservice
+            valueFile: values/quoteservice-values.yaml
+          - name: recommendationservice
+            valueFile: values/recommendationservice-values.yaml
+          - name: redis-cart
+            valueFile: values/redis-cart.values.yaml
+          - name: shippingservice
+            valueFile: values/shippingservice-values.yaml
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/infra360/smruti-training.git'
+        targetRevision: main
+        path: microservices/HelmCharts/microservices
+        helm:
+          valueFiles:
+            - '{{valueFile}}'  # Use the valueFile for each microservice
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true

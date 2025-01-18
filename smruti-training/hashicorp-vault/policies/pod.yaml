@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+  namespace: vault-app
+  annotations:
+    vault.hashicorp.com/agent-inject: 'true'
+    vault.hashicorp.com/role: 'smruti-vault-role'
+    vault.hashicorp.com/agent-inject-secret-config.txt: 'smruti/data/password'
+spec:
+  containers:
+  - image: nginx:latest
+    name: nginx
+  serviceAccountName: vault-app

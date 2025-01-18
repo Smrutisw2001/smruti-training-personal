@@ -1,0 +1,60 @@
+name: recommendationservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: recommendationservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/recommendationservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 50051
+
+
+  env:
+    - name: RECOMMENDATION_SERVICE_PORT
+      value: "50051"  # Port to expose for the service
+    - name: PRODUCT_CATALOG_SERVICE_ADDR
+      value: "productcatalogservice:80"  # Service address of productcatalogservice
+    - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+      value: "featureflagservice:50051"  # Service address of featureflagservice
+    - name: OTEL_PYTHON_LOG_CORRELATION
+      value: "true"  # OpenTelemetry Python log correlation
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"  # OTEL exporter endpoint (adjust if necessary)
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: "CUMULATIVE"  # Adjust depending on your preference
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=recommendationservice"  # Service name for tracing
+    - name: OTEL_SERVICE_NAME
+      value: "recommendationservice"  # OpenTelemetry service name
+    - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+      value: "python"  # The implementation of protocol buffers
+
+  resources:
+    limits:
+      memory: "500Mi"
+
+
+Service:
+  labels:
+    app: recommendationservice
+  ports:
+    - name: grpc
+      port: 80 # Kubernetes service port
+      targetPort: 50051  # Map to container's port
+  type: ClusterIP
+
+configMap:
+  enabled: false
+  
+
+
+statefulset:
+  enabled: false
+
+

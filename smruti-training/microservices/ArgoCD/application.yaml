@@ -1,0 +1,23 @@
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: otelcol
+#   namespace: argocd 
+# spec:
+#   destination:
+#     name: ''
+#     namespace: default
+#     server: https://kubernetes.default.svc
+#   source:
+#     path: microservices/HelmCharts/microservices
+#     repoURL: https://github.com/infra360/smruti-training.git
+#     targetRevision: main
+#     helm:
+#       valueFiles:
+#         - values/otelcol-values.yaml
+#   sources: []
+#   project: default
+#   syncPolicy:
+#     automated:
+#       prune: false
+#       selfHeal: false

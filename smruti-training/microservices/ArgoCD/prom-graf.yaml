@@ -1,0 +1,23 @@
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: prometheus-grafana
+#   namespace: argocd
+# spec:
+#   destination:
+#     name: ''
+#     namespace: monitoring
+#     server: https://kubernetes.default.svc
+#   source:
+#     path: HelmCharts/kube-prometheus-stack
+#     repoURL: https://github.com/SmrutiKrishna2001/microservices.git
+#     targetRevision: practice
+#     helm:
+#       valueFiles:
+#         - values.yaml
+#   sources: []
+#   project: default
+#   syncPolicy:
+#     automated:
+#       prune: false
+#       selfHeal: true

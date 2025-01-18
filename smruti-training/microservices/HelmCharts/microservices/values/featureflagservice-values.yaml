@@ -1,0 +1,58 @@
+name: featureflagservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: featureflagservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/featureflagservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 8080  # Feature Flag Service UI
+      - containerPort: 50051  # Feature Flag Service gRPC API
+
+
+  env:
+    - name: FEATURE_FLAG_SERVICE_PORT
+      value: "8080"
+    - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+      value: "50051"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"
+    - name: OTEL_SERVICE_NAME
+      value: "featureflagservice"
+    - name: DATABASE_URL
+      value: "ecto://ffs:ffs@ffs-postgres:5432/ffs"
+
+resources:
+    limits:
+      memory: "175Mi"
+      
+
+Service:
+  labels:
+    app: featureflagservice
+  ports:
+    - name: http  # Specify a name for the port
+      protocol: TCP
+      port: 8080  # Exposing the Feature Flag Service UI port
+      targetPort: 8080
+    - name: grpc  # Specify a name for the gRPC port
+      protocol: TCP
+      port: 50051  # Exposing the Feature Flag Service gRPC API port
+      targetPort: 50051
+  type: ClusterIP
+
+
+
+configMap:
+  enabled: false
+
+
+statefulset:
+  enabled: false
+

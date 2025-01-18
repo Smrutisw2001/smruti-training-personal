@@ -1,0 +1,155 @@
+loki:
+   ## specifying org id for auth_enabled mulit tenancy option
+   auth_enabled: false
+   multi_tenant_mode: false
+  #  tenant_configs:
+  #    default_tenant: demo
+
+   schemaConfig:
+     configs:
+       - from: "2024-04-01"
+         store: tsdb
+         object_store: s3
+         schema: v13
+         index:
+           prefix: loki_index_
+           period: 24h
+   storage_config:
+     aws:
+       region: ap-south-1 # for example, eu-west-2  
+       bucketnames: smruti-s3-bucket-for-loki-chunks # Your actual S3 bucket name, for example, loki-aws-dev-chunks
+       s3forcepathstyle: false
+   ingester:
+       chunk_encoding: snappy
+   pattern_ingester:
+       enabled: true
+   limits_config:
+     allow_structured_metadata: true
+     volume_enabled: true
+     retention_period: 672h # 28 days retention
+   compactor:
+     retention_enabled: true 
+     delete_request_store: s3
+   ruler:
+    enable_api: true
+    storage:
+      type: s3
+      s3:
+        region: ap-south-1 # for example, eu-west-2
+        bucketnames: smruti-s3-bucket-for-loki-ruler # Your actual S3 bucket name, for example, loki-aws-dev-ruler
+        s3forcepathstyle: false
+      alertmanager_url: http://prom:9093 # The URL of the Alertmanager to send alerts (Prometheus, Mimir, etc.)
+
+   querier:
+      max_concurrent: 4
+
+   storage:
+      type: s3
+      bucketNames:
+        chunks: "smruti-s3-bucket-for-loki-chunks" # Your actual S3 bucket name (loki-aws-dev-chunks)
+        ruler: "smruti-s3-bucket-for-loki-ruler" # Your actual S3 bucket name (loki-aws-dev-ruler)
+        # admin: "<Insert s3 bucket name>" # Your actual S3 bucket name (loki-aws-dev-admin) - GEL customers only
+      s3:
+        region: ap-south-1 # eu-west-2
+        #insecure: false
+      # s3forcepathstyle: false
+
+serviceAccount:
+ create: true
+ annotations:
+   "eks.amazonaws.com/role-arn": "arn:aws:iam::218306567362:role/LokiServiceAccountRole" # The service role you created
+
+deploymentMode: Distributed
+
+ingester:
+ replicas: 3
+ persistence:
+   storageClass: gp2
+   accessModes:
+     - ReadWriteOnce
+   size: 10Gi
+
+querier:
+ replicas: 3
+ maxUnavailable: 2
+ persistence:
+   storageClass: gp2
+   accessModes:
+     - ReadWriteOnce
+   size: 10Gi
+queryFrontend:
+ replicas: 2
+ maxUnavailable: 1
+queryScheduler:
+ replicas: 2
+distributor:
+ replicas: 3
+ maxUnavailable: 2
+compactor:
+ replicas: 1
+ persistence:
+   storageClass: gp2
+   accessModes:
+     - ReadWriteOnce
+   size: 10Gi
+indexGateway:
+ replicas: 2
+ maxUnavailable: 1
+ persistence:
+   storageClass: gp2
+   accessModes:
+     - ReadWriteOnce
+   size: 10Gi
+ruler:
+ replicas: 1
+ maxUnavailable: 1
+ persistence:
+   storageClass: gp2
+   accessModes:
+     - ReadWriteOnce
+   size: 10Gi
+
+
+# This exposes the Loki gateway so it can be written to and queried externaly
+gateway:
+ service:
+   type: ClusterIP
+ 
+# # Since we are using basic auth, we need to pass the username and password to the canary
+# lokiCanary:
+#   extraArgs:
+#     - -pass=$(LOKI_PASS)
+#     - -user=$(LOKI_USER)
+#   extraEnv:
+#     - name: LOKI_PASS
+#       valueFrom:
+#         secretKeyRef:
+#           name: canary-basic-auth
+#           key: password
+#     - name: LOKI_USER
+#       valueFrom:
+#         secretKeyRef:
+#           name: canary-basic-auth
+#           key: username
+
+chunksCache:
+   resources:
+     limits:
+       memory: 1500Mi
+     requests:
+       cpu: 500m
+       memory: 1000Mi
+
+# Enable minio for storage
+minio:
+ enabled: false
+
+backend:
+ replicas: 0
+read:
+ replicas: 0
+write:
+ replicas: 0
+
+singleBinary:
+ replicas: 0

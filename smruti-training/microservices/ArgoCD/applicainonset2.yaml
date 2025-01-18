@@ -1,0 +1,31 @@
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: microservices-applications
+#   namespace: argocd
+# spec:
+#   generators:
+#     - git:
+#         repoURL: 'https://github.com/infra360/smruti-training.git'
+#         targetRevision: HEAD
+#         paths:
+#           - 'microservices/HelmCharts/microservices'
+#   template:
+#     metadata:
+#       name: '{{name}}-{{path.basename}}'
+#     spec:
+#       project: default
+#       source:
+#         repoURL: 'https://github.com/infra360/smruti-training.git'
+#         targetRevision: HEAD
+#         path: 'microservices/HelmCharts/microservices'
+#         helm:
+#           valueFiles:
+#             - '{{path.basename}}'
+#       destination:
+#         server: 'https://kubernetes.default.svc'
+#         namespace: default
+#       syncPolicy:
+#         automated:
+#           prune: false
+#           selfHeal: true

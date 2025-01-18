@@ -1,0 +1,71 @@
+name: ffs-postgres
+namespace: default
+
+statefulset:
+  enabled: true
+  labels:
+    app: ffs-postgres
+  replicas: 1
+
+  containers:
+    name: ffs-postgres
+    image: postgres:16.0
+    ports:
+      - containerPort: 5432
+
+  env:
+    - name: POSTGRES_USER
+      value: "ffs"
+    - name: POSTGRES_DB
+      value: "ffs"
+    - name: POSTGRES_PASSWORD
+      value: "ffs"
+    - name: PGDATA
+      value: "/var/lib/postgresql/data/pgdata"
+
+  resources:
+    limits:
+      memory: "512Mi"
+
+  volumeMounts:
+    - name: postgres-data
+      mountPath: /var/lib/postgresql/data
+
+  livenessProbe:
+    exec:
+      command:
+        - "pg_isready"
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readinessProbe:
+    exec:
+      command:
+        - "pg_isready"
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: ebs-sc
+
+Service:
+  labels:
+    app: ffs-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  clusterIP: None  # Essential for StatefulSet
+
+configMap:
+  enabled: false
+
+Deployment:
+  enabled: false

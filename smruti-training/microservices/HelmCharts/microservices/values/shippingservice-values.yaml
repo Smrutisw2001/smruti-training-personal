@@ -1,0 +1,48 @@
+name: shippingservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: shippingservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/shippingservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 50051
+
+
+  env:
+    - name: SHIPPING_SERVICE_PORT
+      value: "50051"
+    - name: QUOTE_SERVICE_ADDR
+      value: "quoteservice:80"
+    - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      value: "http://otelcol:4318/v1/traces"
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=shippingservice"
+    - name: OTEL_SERVICE_NAME
+      value: "shippingservice"
+
+  resources:
+    limits:
+      memory: "20Mi"
+      
+
+Service:
+  labels:
+    app: shippingservice
+  ports:
+    - protocol: TCP
+      port: 80  # Expose on port 80 inside the cluster
+      targetPort: 50051  # Map to the service port defined in the container
+  type: ClusterIP  # Keep it internal to the cluster (use LoadBalancer if needed externally)
+
+configMap:
+  enabled: false
+
+statefulset:
+  enabled: false

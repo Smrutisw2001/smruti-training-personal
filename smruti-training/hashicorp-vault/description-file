@@ -1,0 +1,13 @@
+here instead of attaching the policy that we created for access s3 and dynamo db to our own created role,we have to attach those policy to spot-instance-eks-node-group-20241203104735206700000002 or the role of your node group.
+This error iI faced and I solved it by that. But if you are attaching the policy to node group role then not only vault ,but also all pods runs in the eks node will get permission to access s3 and dynamodb by using this policy. Because we are attaching policy to directly to node group role.
+
+
+after attaching this policy we have to use the following command
+
+kubectl annotate serviceaccount vault -n vault eks.amazonaws.com/role-arn=arn:aws:iam::218306567362:role/spot-instance-eks-node-group-20241203104735206700000002  --overwrite
+
+
+
+then restart your statefulset so it will update with new policy
+
+kubectl rollout restart statefulset vault -n vault

@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+      {
+          "Effect": "Allow",
+          "Action": [
+              "s3:ListBucket",
+              "s3:GetObject",
+              "s3:PutObject",
+              "s3:DeleteObject"
+          ],
+          "Resource": [
+              "arn:aws:s3:::smruti-vault-storage-bucket",
+              "arn:aws:s3:::smruti-vault-storage-bucket/*"
+          ]
+      },
+      {
+          "Effect": "Allow",
+          "Action": [
+              "kms:DescribeKey",
+              "kms:Decrypt",
+              "kms:Encrypt",
+              "kms:GenerateDataKey"
+          ],
+          "Resource": "arn:aws:kms:ap-south-1:218306567362:key/65873138-2848-4c82-852e-fd7c7386cf84"
+      }
+  ]
+}

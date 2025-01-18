@@ -1,0 +1,44 @@
+
+injector:
+  enabled: true
+
+server: 
+  # Disable dataStorage since S3 does not require a local PVC
+  dataStorage:
+    enabled: false
+  
+  
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+      listener "tcp" {
+        tls_disable = 1
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+      
+      seal "awskms" {
+        region     = "ap-south-1"
+        kms_key_id = "65873138-2848-4c82-852e-fd7c7386cf84"
+        # access_key = "AWS_ACCESS_KEY"  optional if you are not using role
+        # secret_key = "AWS_SECRET_KEY"
+      }
+
+      storage "s3" {
+        # access_key = "AWS_ACCESS_KEY" optional if you are not using role
+        # secret_key = "AWS_SECRET_KEY"
+        # endpoint   = "minio-internal-service.minio.svc.cluster.local:9000"
+        bucket     = "smruti-vault-storage-bucket"
+        region     = "ap-south-1"
+        # s3_force_path_style = "true"
+        # disable_ssl = "true"
+      }
+
+  # Uncomment this if you wish to use IAM roles instead of access/secret keys
+  serviceAccount:
+    create: true
+    name: "vault"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::218306567362:role/smruti-VaultEKSRole"
+    

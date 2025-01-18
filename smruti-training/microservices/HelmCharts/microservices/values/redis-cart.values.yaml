@@ -1,0 +1,54 @@
+name: redis-cart
+namespace: default
+
+statefulset:
+  enabled: true
+  labels:
+    app: redis-cart
+  replicas: 1
+
+  containers:
+    name:
+    image: redis:7.2-alpine
+    ports:
+      - containerPort: 6379
+
+  env:
+    - name: REDIS_PORT
+      value: "6379"
+
+  resources:
+    limits:
+      memory: "20Mi"
+
+  volumeMounts:
+    - name: redis-data
+      mountPath: /data
+
+
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: ebs-sc  # Custom StorageClass for EBS
+
+Service:
+  labels:
+    app: redis-cart
+  ports:
+    - protocol: TCP
+      name: redis-cart
+      port: 6379
+      targetPort: 6379
+  clusterIP: None  # Essential for StatefulSet
+
+configMap:
+  enabled: false
+
+Deployment:
+  enabled: false

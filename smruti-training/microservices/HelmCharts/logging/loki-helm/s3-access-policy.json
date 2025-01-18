@@ -1,0 +1,21 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "LokiStorage",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::smruti-s3-bucket-for-loki-chunks",
+                "arn:aws:s3:::smruti-s3-bucket-for-loki-chunks/*",
+                "arn:aws:s3:::smruti-s3-bucket-for-loki-ruler",
+                "arn:aws:s3:::smruti-s3-bucket-for-loki-ruler/*"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,46 @@
+name: currencyservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: currencyservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/currencyservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 50051
+
+
+  env:
+    - name: CURRENCY_SERVICE_PORT
+      value: "50051"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=currencyservice"
+  resources:
+    limits:
+      memory: "20Mi"
+
+
+Service:
+  labels:
+    app: currencyservice
+  ports:
+    - port: 50051
+      targetPort: 50051
+  type: ClusterIP 
+
+configMap:
+  enabled: false
+  
+
+
+statefulset:
+  enabled: false
+
+

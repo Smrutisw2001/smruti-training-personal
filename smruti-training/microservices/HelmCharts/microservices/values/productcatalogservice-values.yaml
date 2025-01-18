@@ -1,0 +1,55 @@
+name: productcatalogservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: productcatalogservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/productcatalogservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 50051
+
+
+  env:
+    - name: PRODUCT_CATALOG_SERVICE_PORT
+      value: "50051"
+    - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+      value: "featureflagservice:50051" # Update with the correct address
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: "delta"
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=productcatalogservice"
+    - name: OTEL_SERVICE_NAME
+      value: "productcatalogservice"
+
+
+  resources:
+    limits:
+      memory: "20Mi"
+
+
+Service:
+  labels:
+    app: productcatalogservice
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 50051
+  type: ClusterIP
+
+configMap:
+  enabled: false
+  
+
+
+statefulset:
+  enabled: false
+
+

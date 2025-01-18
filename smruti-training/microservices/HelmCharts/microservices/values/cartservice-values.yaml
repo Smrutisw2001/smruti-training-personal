@@ -1,0 +1,57 @@
+name: cartservice
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: cartservice
+  replicas: 1
+
+  containers:
+    name: 
+    image: 218306567362.dkr.ecr.ap-south-1.amazonaws.com/cartservice-smruti
+    tag: "a04ec7b"
+    ports:
+      - containerPort: 50051
+
+
+  env:
+    - name: CARTSERVICE_PORT
+      value: "50051"
+    - name:   REDIS_ADDR
+      value: "redis-cart-0.redis-cart.default.svc.cluster.local"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4317"
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "service.name=cartservice"
+    - name: OTEL_SERVICE_NAME
+      value: "cartservice"
+    - name: ASPNETCORE_URLS
+      value: "http://*:50051"
+
+
+  resources:
+    limits:
+      memory: "160Mi"
+
+
+Service:
+  labels:
+    app: cartservice
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP
+
+
+
+configMap:
+  enabled: false
+  
+
+
+statefulset:
+  enabled: false
+
+

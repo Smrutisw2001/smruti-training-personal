@@ -1,0 +1,121 @@
+name: otelcol
+namespace: default
+
+Deployment:
+  enabled: true
+  labels:
+    app: otelcol
+  replicas: 1
+
+  containers:
+    name: 
+    image: otel/opentelemetry-collector-contrib:0.86.0
+    ports:
+      - containerPort: 4317 # gRPC
+      - containerPort: 4318 # HTTP
+
+  args: 
+    - "--config=/etc/otelcol/otelcol-config.yml"
+
+
+  env:
+    - name: ENVOY_PORT
+      value: "9901"
+
+  volumeMounts:
+    - name: otelcol-config-volume
+      mountPath: /etc/otelcol
+      readOnly: true
+
+  volumes:
+    - name: otelcol-config-volume
+      configMap:
+        name: otelcol
+
+Service:
+  labels:
+    app: otelcol
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317 # gRPC
+      targetPort: 4317
+    - name: otlp-http
+      protocol: TCP
+      port: 4318 # HTTP
+      targetPort: 4318
+  type: ClusterIP
+
+
+
+configMap:
+  enabled: true
+  name:
+  data:
+    otelcol-config.yml: |
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+            http:
+              cors:
+                allowed_origins:
+                  - "http://*"
+                  - "https://*"
+        httpcheck/frontendproxy:
+          targets:
+            - endpoint: http://frontendproxy:${env:ENVOY_PORT}
+
+      exporters:
+        debug:
+        otlp:
+          endpoint: "jaeger:4317"
+          tls:
+            insecure: true
+        otlp/logs:
+          endpoint: "dataprepper:21892"
+          tls:
+            insecure: true
+        otlphttp/prometheus:
+          endpoint: "http://prometheus:9090/api/v1/otlp"
+          tls:
+            insecure: true
+
+      processors:
+        batch:
+        filter/ottl:
+          error_mode: ignore
+          metrics:
+            metric:
+              - 'name == "rpc.server.duration"'
+        transform:
+          metric_statements:
+            - context: metric
+              statements:
+                - set(description, "") where name == "queueSize"
+                - set(description, "") where name == "http.client.duration"
+
+      connectors:
+        spanmetrics:
+
+      service:
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlp, debug, spanmetrics]
+          metrics:
+            receivers: [httpcheck/frontendproxy, otlp, spanmetrics]
+            processors: [filter/ottl, transform, batch]
+            exporters: [otlphttp/prometheus, debug]
+          logs:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlp/logs, debug]
+
+
+statefulset:
+  enabled: false
+
+
+    
